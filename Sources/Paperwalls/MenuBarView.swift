@@ -64,10 +64,11 @@ struct MenuBarView: View {
         openWindow(id: "gallery")
 
         DispatchQueue.main.async {
-            NSApp.activate(ignoringOtherApps: true)
-            NSApp.windows
-                .first { $0.title == "Paperwalls" }
-                .map { $0.makeKeyAndOrderFront(nil) }
+            model.bringGalleryToFront()
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            model.bringGalleryToFront()
         }
     }
 }

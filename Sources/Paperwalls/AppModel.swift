@@ -23,6 +23,7 @@ final class AppModel: ObservableObject {
     private let wallpaperCache: WallpaperCache
     private let wallpaperSetter: SystemDesktopWallpaperSetter
     private var rotationTask: Task<Void, Never>?
+    private weak var galleryWindow: NSWindow?
 
     init() {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
@@ -159,6 +160,36 @@ final class AppModel: ObservableObject {
         }
     }
 
+    func registerGalleryWindow(_ window: NSWindow?) {
+        guard let window else {
+            return
+        }
+
+        galleryWindow = window
+        window.title = "Paperwalls"
+        window.isReleasedWhenClosed = false
+    }
+
+    func bringGalleryToFront() {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+
+        if let galleryWindow {
+            galleryWindow.deminiaturize(nil)
+            galleryWindow.makeKeyAndOrderFront(nil)
+            galleryWindow.orderFrontRegardless()
+            return
+        }
+
+        NSApp.windows
+            .first { $0.title == "Paperwalls" }
+            .map {
+                $0.deminiaturize(nil)
+                $0.makeKeyAndOrderFront(nil)
+                $0.orderFrontRegardless()
+            }
+    }
+
     private func updateRotationTask() {
         rotationTask?.cancel()
         rotationTask = nil
@@ -212,4 +243,3 @@ final class AppModel: ObservableObject {
         return configuration
     }
 }
-

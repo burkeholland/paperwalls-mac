@@ -11,8 +11,13 @@ struct GalleryView: View {
     var body: some View {
         NavigationSplitView {
             SidebarView()
+                .navigationSplitViewColumnWidth(min: 220, ideal: 250, max: 300)
         } detail: {
             VStack(spacing: 0) {
+                if let selectedTheme {
+                    GalleryHeader(theme: selectedTheme)
+                }
+
                 if let statusMessage = model.statusMessage {
                     StatusBar(message: statusMessage, isLoading: model.isLoading)
                 }
@@ -55,6 +60,17 @@ struct GalleryView: View {
                     .environmentObject(model)
             }
         }
+        .background(GalleryWindowReader { window in
+            model.registerGalleryWindow(window)
+        })
+    }
+
+    private var selectedTheme: PaperTheme? {
+        guard let selectedThemeKey = model.selectedThemeKey else {
+            return nil
+        }
+
+        return model.themes.first { $0.key == selectedThemeKey }
     }
 
     private var navigationTitle: String {
@@ -92,18 +108,59 @@ struct SidebarView: View {
 
             Section("Themes") {
                 ForEach(model.themes) { theme in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(theme.label)
-                        Text(theme.desc)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
-                    .tag(theme.key)
+                    Text(theme.label)
+                        .tag(theme.key)
                 }
             }
         }
-        .navigationTitle("Paper")
+        .navigationTitle("Paperwalls")
+    }
+}
+
+struct GalleryHeader: View {
+    let theme: PaperTheme
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(theme.label)
+                    .font(.title3.bold())
+                Text(theme.desc)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(.background)
+    }
+}
+
+struct GalleryWindowReader: NSViewRepresentable {
+    let onWindowChange: (NSWindow?) -> Void
+
+    func makeNSView(context: Context) -> WindowReadingView {
+        let view = WindowReadingView()
+        view.onWindowChange = onWindowChange
+        return view
+    }
+
+    func updateNSView(_ nsView: WindowReadingView, context: Context) {
+        nsView.onWindowChange = onWindowChange
+        DispatchQueue.main.async {
+            nsView.onWindowChange?(nsView.window)
+        }
+    }
+}
+
+final class WindowReadingView: NSView {
+    var onWindowChange: ((NSWindow?) -> Void)?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        onWindowChange?(window)
     }
 }
 
