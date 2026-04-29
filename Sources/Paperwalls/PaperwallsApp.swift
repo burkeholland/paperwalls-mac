@@ -13,7 +13,7 @@ struct PaperwallsApp: App {
                 }
         }
 
-        WindowGroup("Paperwalls", id: "gallery") {
+        Window("Paperwalls", id: "gallery") {
             GalleryView()
                 .environmentObject(model)
                 .task {
