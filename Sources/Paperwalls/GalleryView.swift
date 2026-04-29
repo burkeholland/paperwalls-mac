@@ -189,6 +189,17 @@ struct WallpaperDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
+            HStack {
+                Spacer()
+
+                Button {
+                    dismiss()
+                } label: {
+                    Label("Close", systemImage: "xmark")
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+
             AsyncImage(url: wallpaper.wallpaperUrl) { phase in
                 switch phase {
                 case .success(let image):
@@ -258,4 +269,3 @@ struct StatusBar: View {
         .background(.thinMaterial)
     }
 }
-
