@@ -4,16 +4,22 @@ import SwiftUI
 struct GalleryView: View {
     @EnvironmentObject private var model: AppModel
 
-    private let columns = [
-        GridItem(.adaptive(minimum: 220, maximum: 320), spacing: 16)
-    ]
+    private let gridHorizontalPadding: CGFloat = 20
+    private let gridVerticalPadding: CGFloat = 20
+    private let gridSpacing: CGFloat = 20
+    private let minimumCardWidth: CGFloat = 240
 
     var body: some View {
-        NavigationSplitView {
+        HStack(spacing: 0) {
             SidebarView()
-                .navigationSplitViewColumnWidth(min: 220, ideal: 250, max: 300)
-        } detail: {
+                .frame(width: 255)
+
+            Divider()
+
             VStack(spacing: 0) {
+                GalleryToolbar(title: navigationTitle)
+                    .environmentObject(model)
+
                 if let selectedTheme {
                     GalleryHeader(theme: selectedTheme)
                 }
@@ -22,43 +28,32 @@ struct GalleryView: View {
                     StatusBar(message: statusMessage, isLoading: model.isLoading)
                 }
 
-                ScrollView {
-                    LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(model.filteredWallpapers) { wallpaper in
-                            WallpaperCard(wallpaper: wallpaper)
-                                .environmentObject(model)
+                GeometryReader { geo in
+                    ScrollView {
+                        LazyVGrid(columns: computedColumns(for: geo.size.width), spacing: gridSpacing) {
+                            ForEach(model.filteredWallpapers) { wallpaper in
+                                WallpaperCard(wallpaper: wallpaper)
+                                    .environmentObject(model)
+                            }
+                        }
+                        .padding(.horizontal, gridHorizontalPadding)
+                        .padding(.vertical, gridVerticalPadding)
+                    }
+                    .overlay {
+                        if model.catalog == nil, model.isLoading {
+                            ProgressView("Loading Paper wallpapers...")
+                        } else if model.filteredWallpapers.isEmpty {
+                            ContentUnavailableView("No wallpapers", systemImage: "photo", description: Text("Try a different theme or search."))
                         }
                     }
-                    .padding(20)
-                }
-                .overlay {
-                    if model.catalog == nil, model.isLoading {
-                        ProgressView("Loading Paper wallpapers...")
-                    } else if model.filteredWallpapers.isEmpty {
-                        ContentUnavailableView("No wallpapers", systemImage: "photo", description: Text("Try a different theme or search."))
-                    }
                 }
             }
-            .navigationTitle(navigationTitle)
-            .searchable(text: $model.searchText, prompt: "Search name, theme, or tag")
-            .toolbar {
-                Button {
-                    Task { await model.refreshCatalog() }
-                } label: {
-                    Label("Refresh", systemImage: "arrow.clockwise")
-                }
-
-                Button {
-                    Task { await model.setRandomWallpaper(scope: .all) }
-                } label: {
-                    Label("Random", systemImage: "shuffle")
-                }
-                .disabled(model.catalog == nil)
-            }
-            .sheet(item: $model.previewWallpaper) { wallpaper in
-                WallpaperDetailView(wallpaper: wallpaper)
-                    .environmentObject(model)
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(nsColor: .windowBackgroundColor))
+        }
+        .sheet(item: $model.previewWallpaper) { wallpaper in
+            WallpaperDetailView(wallpaper: wallpaper)
+                .environmentObject(model)
         }
         .background(GalleryWindowReader { window in
             model.registerGalleryWindow(window)
@@ -85,35 +80,161 @@ struct GalleryView: View {
 
         return "Paperwalls"
     }
+
+    private func computedColumns(for width: CGFloat) -> [GridItem] {
+        let available = max(0, width - 2 * gridHorizontalPadding)
+        let count = max(1, Int((available + gridSpacing) / (minimumCardWidth + gridSpacing)))
+        let columnWidth = max(1, (available - CGFloat(count - 1) * gridSpacing) / CGFloat(count))
+        return Array(repeating: GridItem(.fixed(columnWidth), spacing: gridSpacing), count: count)
+    }
 }
 
 struct SidebarView: View {
     @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        List(selection: Binding(
-            get: { model.favoritesOnly ? "favorites" : model.selectedThemeKey ?? "all" },
-            set: { selection in
-                model.favoritesOnly = selection == "favorites"
-                model.selectedThemeKey = selection == "all" || selection == "favorites" ? nil : selection
-            }
-        )) {
-            Section("Library") {
-                Label("All Wallpapers", systemImage: "photo.stack")
-                    .tag("all")
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 12) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(.secondary)
 
-                Label("Favorites", systemImage: "heart")
-                    .tag("favorites")
+                TextField("Search", text: $model.searchText)
+                    .textFieldStyle(.plain)
+                    .font(.title3)
             }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(Color.black.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .padding(.top, 74)
+            .padding(.horizontal, 18)
+            .padding(.bottom, 18)
 
-            Section("Themes") {
-                ForEach(model.themes) { theme in
-                    Text(theme.label)
-                        .tag(theme.key)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    SidebarSection(title: nil) {
+                        SidebarRow(
+                            title: "All Wallpapers",
+                            systemImage: "photo.stack",
+                            isSelected: !model.favoritesOnly && model.selectedThemeKey == nil
+                        ) {
+                            model.favoritesOnly = false
+                            model.selectedThemeKey = nil
+                        }
+
+                        SidebarRow(
+                            title: "Favorites",
+                            systemImage: "heart",
+                            isSelected: model.favoritesOnly
+                        ) {
+                            model.favoritesOnly = true
+                            model.selectedThemeKey = nil
+                        }
+                    }
+
+                    SidebarSection(title: "Themes") {
+                        ForEach(model.themes) { theme in
+                            SidebarRow(
+                                title: theme.label,
+                                systemImage: nil,
+                                isSelected: !model.favoritesOnly && model.selectedThemeKey == theme.key
+                            ) {
+                                model.favoritesOnly = false
+                                model.selectedThemeKey = theme.key
+                            }
+                        }
+                    }
                 }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 18)
             }
+            .scrollIndicators(.hidden)
         }
-        .navigationTitle("Paperwalls")
+        .background(Color(nsColor: .controlBackgroundColor))
+    }
+}
+
+struct GalleryToolbar: View {
+    @EnvironmentObject private var model: AppModel
+    let title: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(title)
+                .font(.title3.bold())
+
+            Spacer()
+
+            Button {
+                Task { await model.refreshCatalog() }
+            } label: {
+                Label("Refresh", systemImage: "arrow.clockwise")
+            }
+
+            Button {
+                Task { await model.setRandomWallpaper(scope: .all) }
+            } label: {
+                Label("Random", systemImage: "shuffle")
+            }
+            .disabled(model.catalog == nil)
+        }
+        .padding(.leading, 22)
+        .padding(.trailing, 18)
+        .padding(.top, 18)
+        .padding(.bottom, 14)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+}
+
+struct SidebarSection<Content: View>: View {
+    let title: String?
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            if let title {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 4)
+            }
+
+            content
+        }
+    }
+}
+
+struct SidebarRow: View {
+    private let accent = Color(red: 1.0, green: 0.18, blue: 0.28)
+
+    let title: String
+    let systemImage: String?
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 17, weight: .medium))
+                        .frame(width: 22)
+                }
+
+                Text(title)
+                    .font(.system(size: 16, weight: isSelected ? .semibold : .regular))
+                    .lineLimit(1)
+
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(isSelected ? accent : .primary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color.black.opacity(0.06) : Color.clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -170,43 +291,47 @@ struct WallpaperCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ZStack(alignment: .topLeading) {
-                AsyncImage(url: wallpaper.thumbUrl) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    case .failure:
-                        Image(systemName: "photo")
-                            .font(.largeTitle)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    case .empty:
-                        ProgressView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    @unknown default:
-                        EmptyView()
+            // Color.clear acts as a fixed-size layout anchor. AsyncImage with scaledToFill
+            // reports its fill dimensions (wider than the column) up the layout tree, which
+            // inflates ZStack/VStack and causes card overlap. Color.clear fills exactly
+            // what is proposed, so the layout frame stays pinned to the column width × 150.
+            Color.clear
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 150, maxHeight: 150)
+                .overlay {
+                    AsyncImage(url: wallpaper.thumbUrl) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        case .failure:
+                            Image(systemName: "photo")
+                                .font(.largeTitle)
+                                .foregroundStyle(.secondary)
+                        case .empty:
+                            ProgressView()
+                        @unknown default:
+                            EmptyView()
+                        }
                     }
                 }
-                .frame(height: 150)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-
-                if model.newWallpaperIDs.contains(wallpaper.id) {
-                    Text("NEW")
-                        .font(.caption2.weight(.bold))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(.orange, in: Capsule())
-                        .foregroundStyle(.white)
-                        .padding(10)
+                .overlay(alignment: .topLeading) {
+                    if model.newWallpaperIDs.contains(wallpaper.id) {
+                        Text("NEW")
+                            .font(.caption2.weight(.bold))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.orange, in: Capsule())
+                            .foregroundStyle(.white)
+                            .padding(10)
+                    }
                 }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                model.previewWallpaper = wallpaper
-                Task { await model.markSeen(wallpaper) }
-            }
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    model.previewWallpaper = wallpaper
+                    Task { await model.markSeen(wallpaper) }
+                }
 
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -235,6 +360,7 @@ struct WallpaperCard: View {
             }
         }
         .padding(12)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }
