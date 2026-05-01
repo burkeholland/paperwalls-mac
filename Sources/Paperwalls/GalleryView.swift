@@ -106,7 +106,7 @@ struct SidebarView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(Color.black.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .padding(.top, 74)
+            .padding(.top, 18)
             .padding(.horizontal, 18)
             .padding(.bottom, 18)
 
