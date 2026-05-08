@@ -490,7 +490,6 @@
     }
 
     .section-heading p,
-    .feature-card p,
     .final-card p {
       color: var(--ink-soft);
       font-size: 17px;
@@ -552,13 +551,6 @@
       line-height: 1.45;
     }
 
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .feature-card,
     .final-card {
       border: 1px solid rgba(255, 255, 255, 0.72);
       border-radius: 24px;
@@ -567,41 +559,67 @@
       backdrop-filter: blur(12px) saturate(1.24);
     }
 
-    .feature-card {
-      padding: 26px;
+    .feature-ledger {
+      display: grid;
+      border-top: 1px solid rgba(21, 18, 15, 0.14);
     }
 
-    .feature-icon {
+    .feature-item {
+      display: grid;
+      grid-template-columns: 86px minmax(220px, 0.4fr) minmax(0, 0.6fr) 150px;
+      gap: clamp(1rem, 3vw, 2.4rem);
+      align-items: baseline;
+      padding: 26px 0;
+      border-bottom: 1px solid rgba(21, 18, 15, 0.14);
+    }
+
+    .feature-number {
+      color: rgba(21, 18, 15, 0.32);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .feature-item h3 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 3.15rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
+
+    .feature-item p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 17px;
+      line-height: 1.72;
+    }
+
+    .feature-note {
       display: grid;
       place-items: center;
-      width: 42px;
-      height: 42px;
-      margin-bottom: 20px;
-      border-radius: 15px;
+      justify-self: end;
+      min-width: 112px;
+      padding: 8px 12px;
+      border: 1px solid rgba(21, 18, 15, 0.08);
+      border-radius: 999px;
       background: #fff0eb;
+      color: rgba(21, 18, 15, 0.58);
       font-family: var(--mono);
+      font-size: 11px;
       font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
-    .feature-card:nth-child(2) .feature-icon,
-    .feature-card:nth-child(5) .feature-icon {
+    .feature-item:nth-child(2) .feature-note,
+    .feature-item:nth-child(5) .feature-note {
       background: #e8f7fe;
     }
 
-    .feature-card:nth-child(3) .feature-icon,
-    .feature-card:nth-child(6) .feature-icon {
+    .feature-item:nth-child(3) .feature-note,
+    .feature-item:nth-child(6) .feature-note {
       background: #f2fde0;
-    }
-
-    .feature-card h3 {
-      margin: 0;
-      font-size: 23px;
-      letter-spacing: -0.045em;
-    }
-
-    .feature-card p {
-      margin: 12px 0 0;
-      font-size: 16px;
     }
 
     .final-card {
@@ -638,9 +656,21 @@
         min-height: 580px;
       }
 
-      .theme-rail,
-      .feature-grid {
+      .theme-rail {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .feature-item {
+        grid-template-columns: 64px 1fr;
+      }
+
+      .feature-item p {
+        grid-column: 2;
+      }
+
+      .feature-note {
+        grid-column: 2;
+        justify-self: start;
       }
 
       .nav-links a:not(.nav-cta) {
@@ -675,9 +705,18 @@
       }
 
       .stat-strip,
-      .theme-rail,
-      .feature-grid {
+      .theme-rail {
         grid-template-columns: 1fr;
+      }
+
+      .feature-item {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .feature-item p,
+      .feature-note {
+        grid-column: auto;
       }
 
       .desktop-stage {
@@ -802,13 +841,13 @@
         </div>
         <p>Paperwalls stays out of the way until you want a new scene. Open the gallery, search the catalog, or use the menu bar quick switcher.</p>
       </div>
-      <div class="feature-grid">
-        <article class="feature-card"><div class="feature-icon">01</div><h3>One-click setting</h3><p>Apply any wallpaper across all displays without digging through System Settings.</p></article>
-        <article class="feature-card"><div class="feature-icon">02</div><h3>Automatic rotation</h3><p>Pick all wallpapers or a single theme, choose a preset schedule, and let the desktop refresh itself.</p></article>
-        <article class="feature-card"><div class="feature-icon">03</div><h3>Fast search</h3><p>Find wallpapers by name, theme, or tag when you know the vibe but not the exact image.</p></article>
-        <article class="feature-card"><div class="feature-icon">04</div><h3>Favorites first</h3><p>Save the keepers and jump back to them from the gallery or the menu bar.</p></article>
-        <article class="feature-card"><div class="feature-icon">05</div><h3>Offline fallback</h3><p>Your last-synced catalog remains available, and full-resolution wallpapers are cached locally.</p></article>
-        <article class="feature-card"><div class="feature-icon">06</div><h3>What's new</h3><p>Spot new additions since your last visit so the collection keeps feeling fresh.</p></article>
+      <div class="feature-ledger">
+        <article class="feature-item"><span class="feature-number">01</span><h3>One-click setting</h3><p>Apply any wallpaper across all displays without digging through System Settings.</p><span class="feature-note">all displays</span></article>
+        <article class="feature-item"><span class="feature-number">02</span><h3>Automatic rotation</h3><p>Pick all wallpapers or a single theme, choose a preset schedule, and let the desktop refresh itself.</p><span class="feature-note">set it once</span></article>
+        <article class="feature-item"><span class="feature-number">03</span><h3>Fast search</h3><p>Find wallpapers by name, theme, or tag when you know the vibe but not the exact image.</p><span class="feature-note">name/theme/tag</span></article>
+        <article class="feature-item"><span class="feature-number">04</span><h3>Favorites first</h3><p>Save the keepers and jump back to them from the gallery or the menu bar.</p><span class="feature-note">quick access</span></article>
+        <article class="feature-item"><span class="feature-number">05</span><h3>Offline fallback</h3><p>Your last-synced catalog remains available, and full-resolution wallpapers are cached locally.</p><span class="feature-note">local cache</span></article>
+        <article class="feature-item"><span class="feature-number">06</span><h3>What's new</h3><p>Spot new additions since your last visit so the collection keeps feeling fresh.</p><span class="feature-note">fresh finds</span></article>
       </div>
     </section>
 
