@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paperwalls for Mac - Beautiful desktop wallpapers</title>
+  <meta name="description" content="Paperwalls is a free macOS menu bar app for browsing, favoriting, rotating, and setting beautiful 4K flat-design wallpapers.">
+  <meta property="og:title" content="Paperwalls for Mac">
+  <meta property="og:description" content="Beautiful flat-design wallpapers, organized by theme and ready from your menu bar.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://burkeholland.github.io/paperwalls-mac/">
+  <meta name="theme-color" content="#fff7ed">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --coral: #ff7f50;
+      --azure: #0ea5e9;
+      --sage: #84cc16;
+      --ink: #15120f;
+      --ink-soft: #4f463e;
+      --paper: #fffaf1;
+      --paper-deep: #f6ead7;
+      --mist: #ecf7fb;
+      --surface: rgba(255, 255, 255, 0.74);
+      --surface-strong: rgba(255, 255, 255, 0.92);
+      --line: rgba(63, 47, 30, 0.12);
+      --shadow: 0 24px 80px rgba(68, 47, 25, 0.14);
+      --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 127, 80, 0.18), transparent 32rem),
+        radial-gradient(circle at 86% 8%, rgba(14, 165, 233, 0.16), transparent 34rem),
+        radial-gradient(circle at 74% 76%, rgba(132, 204, 22, 0.14), transparent 32rem),
+        linear-gradient(145deg, #fffdf8 0%, #f7efe3 42%, #edf8fb 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      content: "";
+      opacity: 0.23;
+      background-image:
+        linear-gradient(rgba(21, 18, 15, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(21, 18, 15, 0.035) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, #000, transparent 72%);
+    }
+
+    body::after {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      content: "";
+      opacity: 0.16;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.24'/%3E%3C/svg%3E");
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 14px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      width: min(1180px, calc(100% - 28px));
+      margin: 14px auto 0;
+      padding: 10px 12px 10px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.62);
+      box-shadow: 0 12px 40px rgba(68, 47, 25, 0.08);
+      backdrop-filter: blur(16px) saturate(1.35);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px rgba(68, 47, 25, 0.16);
+      object-fit: cover;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(21, 18, 15, 0.68);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .nav-links a:not(.nav-cta) {
+      padding: 9px 12px;
+      border-radius: 999px;
+    }
+
+    .nav-links a:not(.nav-cta):hover {
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--ink);
+    }
+
+    .nav-cta,
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 999px;
+      color: white;
+      background: #f36f45;
+      box-shadow: 0 12px 28px rgba(243, 111, 69, 0.2);
+      font-weight: 800;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .nav-cta {
+      padding: 10px 16px;
+    }
+
+    .button {
+      min-height: 52px;
+      padding: 14px 22px;
+    }
+
+    .nav-cta:hover,
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 36px rgba(243, 111, 69, 0.28);
+    }
+
+    .button.secondary {
+      color: var(--ink);
+      background: #fffaf1;
+      box-shadow: inset 0 0 0 1px rgba(21, 18, 15, 0.1), 0 10px 28px rgba(68, 47, 25, 0.08);
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 0.96fr) minmax(360px, 1.04fr);
+      gap: clamp(2rem, 5vw, 5rem);
+      align-items: center;
+      padding: clamp(4.8rem, 9vw, 8rem) 0 4rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 22px;
+      padding: 7px 12px;
+      border: 1px solid rgba(21, 18, 15, 0.08);
+      border-radius: 999px;
+      color: rgba(21, 18, 15, 0.68);
+      background: rgba(255, 255, 255, 0.58);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--sage);
+      box-shadow: 0 0 0 6px rgba(132, 204, 22, 0.12);
+    }
+
+    h1 {
+      max-width: 860px;
+      margin: 0;
+      font-size: clamp(4rem, 10vw, 8.4rem);
+      line-height: 0.82;
+      letter-spacing: -0.075em;
+      font-weight: 800;
+    }
+
+    .gradient-text {
+      color: #f36f45;
+    }
+
+    .hero-copy {
+      max-width: 660px;
+      margin: 28px 0 0;
+      color: var(--ink-soft);
+      font-size: clamp(1.08rem, 2vw, 1.28rem);
+      line-height: 1.72;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      max-width: 620px;
+      margin-top: 34px;
+    }
+
+    .stat {
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.54);
+      backdrop-filter: blur(12px) saturate(1.25);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 26px;
+      line-height: 1;
+      letter-spacing: -0.055em;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 6px;
+      color: rgba(21, 18, 15, 0.56);
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .desktop-stage {
+      position: relative;
+      min-height: 570px;
+      perspective: 1400px;
+    }
+
+    .mac-frame {
+      position: relative;
+      z-index: 2;
+      margin-top: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.74);
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.5);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px) saturate(1.3);
+      transform: rotateX(4deg) rotateY(-7deg) rotateZ(1deg);
+    }
+
+    .window-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 44px;
+      padding: 0 18px;
+      border-bottom: 1px solid rgba(21, 18, 15, 0.08);
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+    }
+
+    .dot.red { background: #ef4444; }
+    .dot.yellow { background: #f59e0b; }
+    .dot.green { background: #22c55e; }
+
+    .window-title {
+      margin-left: 10px;
+      color: rgba(21, 18, 15, 0.56);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 174px 1fr;
+      min-height: 448px;
+    }
+
+    .sidebar {
+      padding: 16px;
+      border-right: 1px solid rgba(21, 18, 15, 0.08);
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .search {
+      margin-bottom: 18px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: rgba(21, 18, 15, 0.5);
+      background: rgba(21, 18, 15, 0.06);
+      font-size: 13px;
+    }
+
+    .side-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      padding: 8px 10px;
+      border-radius: 11px;
+      color: rgba(21, 18, 15, 0.62);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .side-row.active {
+      color: var(--coral);
+      background: rgba(255, 127, 80, 0.1);
+    }
+
+    .side-row span:last-child {
+      color: rgba(21, 18, 15, 0.35);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .gallery {
+      padding: 18px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .toolbar strong {
+      font-size: 17px;
+      letter-spacing: -0.04em;
+    }
+
+    .toolbar span {
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: white;
+      background: #15120f;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .wall-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .wall-card {
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.66);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.58);
+      box-shadow: 0 12px 30px rgba(68, 47, 25, 0.1);
+    }
+
+    .wall-card img,
+    .wall-card .placeholder {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #ffd4c4, #b8e7ff, #ddf7ad);
+    }
+
+    .wall-meta {
+      padding: 10px;
+    }
+
+    .wall-meta b {
+      display: block;
+      overflow: hidden;
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .wall-meta span {
+      color: rgba(21, 18, 15, 0.48);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .menu-popover {
+      position: absolute;
+      right: -10px;
+      bottom: 34px;
+      z-index: 3;
+      width: 244px;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 20px 50px rgba(68, 47, 25, 0.14);
+      backdrop-filter: blur(16px) saturate(1.2);
+    }
+
+    .menu-popover .menu-line {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 10px;
+      border-radius: 12px;
+      color: rgba(21, 18, 15, 0.72);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .menu-popover .menu-line.hot {
+      color: white;
+      background: #15120f;
+    }
+
+    section {
+      padding: 5rem 0;
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 0.76fr) minmax(280px, 0.5fr);
+      gap: 2rem;
+      align-items: end;
+      margin-bottom: 2rem;
+    }
+
+    .kicker {
+      margin: 0 0 10px;
+      color: var(--coral);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(3.1rem, 7vw, 6.7rem);
+      line-height: 0.86;
+      letter-spacing: -0.07em;
+    }
+
+    .section-heading p,
+    .feature-card p,
+    .privacy-card p,
+    .final-card p {
+      color: var(--ink-soft);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    .theme-rail {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .theme-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 280px;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 24px;
+      background: var(--surface);
+      box-shadow: 0 16px 44px rgba(68, 47, 25, 0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .theme-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 22px 54px rgba(68, 47, 25, 0.16);
+    }
+
+    .theme-card img,
+    .theme-card .placeholder {
+      width: 100%;
+      height: 178px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #ffd4c4, #b8e7ff, #ddf7ad);
+    }
+
+    .theme-card:nth-child(2n) {
+      transform: translateY(34px);
+    }
+
+    .theme-card:nth-child(2n):hover {
+      transform: translateY(30px);
+    }
+
+    .theme-copy {
+      padding: 18px;
+    }
+
+    .theme-copy b {
+      display: block;
+      font-size: 19px;
+      letter-spacing: -0.045em;
+    }
+
+    .theme-copy span {
+      display: block;
+      margin-top: 6px;
+      color: rgba(21, 18, 15, 0.56);
+      line-height: 1.45;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card,
+    .privacy-card,
+    .final-card {
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 24px;
+      background: var(--surface);
+      box-shadow: 0 16px 44px rgba(68, 47, 25, 0.1);
+      backdrop-filter: blur(12px) saturate(1.24);
+    }
+
+    .feature-card {
+      padding: 26px;
+    }
+
+    .feature-icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      margin-bottom: 20px;
+      border-radius: 15px;
+      background: #fff0eb;
+      font-family: var(--mono);
+      font-weight: 700;
+    }
+
+    .feature-card:nth-child(2) .feature-icon,
+    .feature-card:nth-child(5) .feature-icon {
+      background: #e8f7fe;
+    }
+
+    .feature-card:nth-child(3) .feature-icon,
+    .feature-card:nth-child(6) .feature-icon {
+      background: #f2fde0;
+    }
+
+    .feature-card h3 {
+      margin: 0;
+      font-size: 23px;
+      letter-spacing: -0.045em;
+    }
+
+    .feature-card p {
+      margin: 12px 0 0;
+      font-size: 16px;
+    }
+
+    .privacy-band {
+      display: grid;
+      grid-template-columns: minmax(0, 0.8fr) minmax(280px, 0.52fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .privacy-card {
+      padding: 34px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.56)),
+        radial-gradient(circle at 86% 24%, rgba(132, 204, 22, 0.16), transparent 18rem);
+    }
+
+    .privacy-card h2 {
+      max-width: 740px;
+      font-size: clamp(3rem, 6vw, 5.8rem);
+    }
+
+    .terminal {
+      overflow: hidden;
+      border-radius: 24px;
+      background: #0d1117;
+      box-shadow: 0 24px 60px rgba(13, 17, 23, 0.34);
+    }
+
+    .terminal .window-top {
+      border-color: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .terminal pre {
+      margin: 0;
+      padding: 26px;
+      color: #dbeafe;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .terminal .ok {
+      color: #86efac;
+    }
+
+    .terminal .accent {
+      color: #7dd3fc;
+    }
+
+    .final-card {
+      display: grid;
+      grid-template-columns: minmax(0, 0.72fr) minmax(260px, 0.28fr);
+      gap: 2rem;
+      align-items: center;
+      padding: clamp(2rem, 5vw, 4rem);
+      background:
+        radial-gradient(circle at 12% 20%, rgba(255, 127, 80, 0.15), transparent 24rem),
+        radial-gradient(circle at 94% 82%, rgba(14, 165, 233, 0.15), transparent 22rem),
+        rgba(255, 255, 255, 0.66);
+    }
+
+    .final-card h2 {
+      font-size: clamp(3.4rem, 8vw, 7.4rem);
+    }
+
+    .badge-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 24px;
+    }
+
+    .badge {
+      padding: 7px 12px;
+      border: 1px solid rgba(21, 18, 15, 0.07);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.64);
+      color: rgba(21, 18, 15, 0.66);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    footer {
+      padding: 2rem 0 3rem;
+      color: rgba(21, 18, 15, 0.52);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    @media (max-width: 960px) {
+      .hero,
+      .section-heading,
+      .privacy-band,
+      .final-card {
+        grid-template-columns: 1fr;
+      }
+
+      .desktop-stage {
+        min-height: 580px;
+      }
+
+      .theme-rail,
+      .feature-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .nav-links a:not(.nav-cta) {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .wrap {
+        width: min(100% - 28px, 1180px);
+      }
+
+      .nav {
+        top: 8px;
+      }
+
+      .brand span:last-child {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 3.8rem;
+      }
+
+      h1 {
+        font-size: clamp(3.4rem, 19vw, 5.8rem);
+      }
+
+      .hero-actions,
+      .button {
+        width: 100%;
+      }
+
+      .stat-strip,
+      .theme-rail,
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .desktop-stage {
+        min-height: auto;
+      }
+
+      .mac-frame {
+        margin-top: 20px;
+        transform: none;
+      }
+
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar,
+      .menu-popover,
+      .menu-popover {
+        display: none;
+      }
+
+      .wall-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .theme-card:nth-child(2n),
+      .theme-card:nth-child(2n):hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href="#top" aria-label="Paperwalls home">
+      <img class="brand-mark" src="assets/app-icon.png" alt="" width="34" height="34">
+      <span>Paperwalls</span>
+    </a>
+    <div class="nav-links">
+      <a href="#themes">Themes</a>
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a class="nav-cta" href="https://apps.apple.com/us/app/paperwalls/id6765750401?mt=12">Mac App Store</a>
+    </div>
+  </nav>
+
+  <main id="top">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow"><span class="pulse"></span>Free macOS menu bar wallpaper studio</p>
+        <h1 id="hero-title">Make your desktop feel <span class="gradient-text">less default.</span></h1>
+        <p class="hero-copy">Paperwalls brings a living catalog of 4K flat-design wallpapers to your Mac. Browse curated themes, favorite the good ones, rotate on a schedule, and set every display in one click.</p>
+        <div class="hero-actions">
+          <a class="button" href="https://apps.apple.com/us/app/paperwalls/id6765750401?mt=12">Download free for Mac</a>
+          <a class="button secondary" href="#themes">Browse the collection</a>
+        </div>
+        <div class="stat-strip" aria-label="Paperwalls stats">
+          <div class="stat"><strong id="wallpaper-count">4K</strong><span>wallpapers</span></div>
+          <div class="stat"><strong id="theme-count">32</strong><span>themes</span></div>
+          <div class="stat"><strong>0</strong><span>data collected</span></div>
+        </div>
+      </div>
+
+      <div class="desktop-stage" aria-label="Paperwalls app preview">
+        <div class="mac-frame">
+          <div class="window-top">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="window-title">Paperwalls.gallery</span>
+          </div>
+          <div class="app-shell">
+            <aside class="sidebar">
+              <div class="search">Search</div>
+              <div class="side-row active"><span>All Wallpapers</span><span id="side-count">4K</span></div>
+              <div class="side-row"><span>Favorites</span><span>fav</span></div>
+              <div class="side-row"><span>Deep Space</span><span>10</span></div>
+              <div class="side-row"><span>Coral Reef</span><span>10</span></div>
+              <div class="side-row"><span>Summer '86</span><span>10</span></div>
+              <div class="side-row"><span>Chicago</span><span>10</span></div>
+            </aside>
+            <div class="gallery">
+              <div class="toolbar"><strong>Fresh wallpapers</strong><span>Set Random</span></div>
+              <div class="wall-grid" id="hero-wallpapers">
+                <div class="wall-card"><div class="placeholder"></div><div class="wall-meta"><b>Loading catalog</b><span>paper api</span></div></div>
+                <div class="wall-card"><div class="placeholder"></div><div class="wall-meta"><b>Curated themes</b><span>flat design</span></div></div>
+                <div class="wall-card"><div class="placeholder"></div><div class="wall-meta"><b>One click set</b><span>macos</span></div></div>
+                <div class="wall-card"><div class="placeholder"></div><div class="wall-meta"><b>Auto rotation</b><span>menu bar</span></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="menu-popover" aria-hidden="true">
+          <div class="menu-line hot"><span>Set Random Wallpaper</span><span>cmd+R</span></div>
+          <div class="menu-line"><span>Random From Theme</span><span>&gt;</span></div>
+          <div class="menu-line"><span>Rotate Automatically</span><span>on</span></div>
+          <div class="menu-line"><span>Refresh Catalog</span><span>refresh</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap" id="themes" aria-labelledby="themes-title">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">The collection</p>
+          <h2 id="themes-title">A gallery wall for every mood.</h2>
+        </div>
+        <p>Each wallpaper belongs to a hand-curated theme: city skylines, deep space, coral reefs, mid-century interiors, northern lights, national parks, and more. New collections arrive regularly.</p>
+      </div>
+      <div class="theme-rail" id="theme-rail">
+        <article class="theme-card"><div class="placeholder"></div><div class="theme-copy"><b>Deep Space</b><span>Beyond the edge of everything.</span></div></article>
+        <article class="theme-card"><div class="placeholder"></div><div class="theme-copy"><b>Coral Reef</b><span>Beneath the surface, another world.</span></div></article>
+        <article class="theme-card"><div class="placeholder"></div><div class="theme-copy"><b>Mid-Century Modern</b><span>Atomic age design and warm interiors.</span></div></article>
+        <article class="theme-card"><div class="placeholder"></div><div class="theme-copy"><b>Northern Lights</b><span>Aurora over frozen lakes and pines.</span></div></article>
+      </div>
+    </section>
+
+    <section class="wrap" id="features" aria-labelledby="features-title">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">Native Mac details</p>
+          <h2 id="features-title">Small app. Big desktop energy.</h2>
+        </div>
+        <p>Paperwalls stays out of the way until you want a new scene. Open the gallery, search the catalog, or use the menu bar quick switcher.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card"><div class="feature-icon">01</div><h3>One-click setting</h3><p>Apply any wallpaper across all displays without digging through System Settings.</p></article>
+        <article class="feature-card"><div class="feature-icon">02</div><h3>Automatic rotation</h3><p>Pick all wallpapers or a single theme, choose a preset schedule, and let the desktop refresh itself.</p></article>
+        <article class="feature-card"><div class="feature-icon">03</div><h3>Fast search</h3><p>Find wallpapers by name, theme, or tag when you know the vibe but not the exact image.</p></article>
+        <article class="feature-card"><div class="feature-icon">04</div><h3>Favorites first</h3><p>Save the keepers and jump back to them from the gallery or the menu bar.</p></article>
+        <article class="feature-card"><div class="feature-icon">05</div><h3>Offline fallback</h3><p>Your last-synced catalog remains available, and full-resolution wallpapers are cached locally.</p></article>
+        <article class="feature-card"><div class="feature-icon">06</div><h3>What's new</h3><p>Spot new additions since your last visit so the collection keeps feeling fresh.</p></article>
+      </div>
+    </section>
+
+    <section class="wrap" id="privacy" aria-label="Privacy and technical notes">
+      <div class="privacy-band">
+        <article class="privacy-card">
+          <p class="kicker">Privacy by default</p>
+          <h2>No account. No tracking. No data collected.</h2>
+          <p>Paperwalls downloads a public wallpaper catalog, stores your favorites locally, and caches wallpapers on your Mac. The App Store listing reports no data collected.</p>
+          <div class="badge-stack">
+            <span class="badge">macOS 15+</span>
+            <span class="badge">4K wallpapers</span>
+            <span class="badge">Free download</span>
+            <span class="badge">Graphics & Design</span>
+          </div>
+        </article>
+        <aside class="terminal" aria-label="Technical summary">
+          <div class="window-top">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="window-title">paperwalls.status</span>
+          </div>
+          <pre><span class="accent">$ paperwalls sync</span>
+catalog: https://burkeholland.github.io/paper/api.json
+quality: 4K
+storage: local cache
+privacy: <span class="ok">no data collected</span>
+rotation: hourly | daily | weekly | custom
+result: <span class="ok">desktop upgraded</span></pre>
+        </aside>
+      </div>
+    </section>
+
+    <section class="wrap" aria-labelledby="download-title">
+      <div class="final-card">
+        <div>
+          <p class="kicker">Free on the Mac App Store</p>
+          <h2 id="download-title">Give your Mac a better view.</h2>
+          <p>Install Paperwalls, open the gallery from your menu bar, and start rotating through a curated collection of free 4K flat-design wallpapers.</p>
+        </div>
+        <a class="button" href="https://apps.apple.com/us/app/paperwalls/id6765750401?mt=12">Get Paperwalls</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <span>(c) 2026 Burke Holland - Paperwalls for Mac - Wallpapers powered by the Paper collection.</span>
+  </footer>
+
+  <script>
+    const catalogUrl = "https://burkeholland.github.io/paper/api.json";
+    const preferredThemes = ["deep-space", "coral-reef", "mid-century-modern", "northern-lights"];
+
+    function byTheme(catalog, themeKey) {
+      return catalog.wallpapers.find((wallpaper) => wallpaper.theme === themeKey) || catalog.wallpapers[0];
+    }
+
+    function imageMarkup(wallpaper, altPrefix = "") {
+      if (!wallpaper) return '<div class="placeholder"></div>';
+      return `<img src="${wallpaper.thumbUrl}" alt="${altPrefix}${wallpaper.name}" loading="lazy">`;
+    }
+
+    function renderHero(catalog) {
+      const heroItems = ["neon-tokyo", "national-parks", "summer-86", "chicago"]
+        .map((theme) => byTheme(catalog, theme))
+        .filter(Boolean);
+
+      document.getElementById("hero-wallpapers").innerHTML = heroItems.map((wallpaper) => `
+        <article class="wall-card">
+          ${imageMarkup(wallpaper)}
+          <div class="wall-meta">
+            <b>${wallpaper.name}</b>
+            <span>${wallpaper.tags.slice(0, 2).join(" / ")}</span>
+          </div>
+        </article>
+      `).join("");
+
+    }
+
+    function renderThemes(catalog) {
+      const cards = preferredThemes.map((themeKey) => {
+        const theme = catalog.themes.find((item) => item.key === themeKey);
+        const wallpaper = byTheme(catalog, themeKey);
+        return `
+          <article class="theme-card">
+            ${imageMarkup(wallpaper, `${theme?.label || "Theme"} preview: `)}
+            <div class="theme-copy">
+              <b>${theme?.label || wallpaper.name}</b>
+              <span>${theme?.desc || wallpaper.tags.join(", ")}</span>
+            </div>
+          </article>
+        `;
+      });
+
+      document.getElementById("theme-rail").innerHTML = cards.join("");
+    }
+
+    fetch(catalogUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Catalog failed: ${response.status}`);
+        return response.json();
+      })
+      .then((catalog) => {
+        document.getElementById("wallpaper-count").textContent = catalog.wallpapers.length;
+        document.getElementById("theme-count").textContent = catalog.themes.length;
+        document.getElementById("side-count").textContent = catalog.wallpapers.length;
+        renderHero(catalog);
+        renderThemes(catalog);
+      })
+      .catch((error) => {
+        console.warn("Paperwalls catalog unavailable", error);
+      });
+  </script>
+</body>
+</html>
